@@ -1,0 +1,33 @@
+import nltk
+from nltk.stem import PorterStemmer
+ps = PorterStemmer()
+def stem_words(text):
+   stemmed_words = [ps.stem(word) for word in text.split()]
+   return " ".join(stemmed_words) # Join with space
+
+new_df['tags'] = new_df['tags'].apply(stem_words)
+new_df.iloc[0]['tags']
+from sklearn.feature_extraction.text import CountVectorizer
+cv = CountVectorizer(max_features=5000,stop_words='english')
+vector = cv.fit_transform(new_df['tags']).toarray()
+vector
+from sklearn.metrics.pairwise import cosine_similarity
+similary = cosine_similarity(vector)
+similary
+similary.shape
+def recommend(movie):
+    try:
+        # Find the index of the movie
+        index = new_df[new_df['title'] == movie].index[0]
+        
+        # Get similarity scores for the movie
+        distances = sorted(list(enumerate(similary[index])), reverse=True, key=lambda x: x[1])
+        
+        # Print out the top 5 recommendations (excluding the movie itself)
+        for i in distances[1:6]:
+            print(new_df.iloc[i[0]]['title'])
+    except IndexError:
+        print(f"Movie '{movie}' not found in the database.")
+    except KeyError:
+        print("The DataFrame does not contain a 'Title' column.")
+recommend('Interstellar')
